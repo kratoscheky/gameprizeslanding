@@ -7,18 +7,36 @@
 html,body{height:100%}
 
 /* small utility classes */
-.btn-primary{background:var(--accent);color:#0b0b0b;padding:.7rem 1rem;border-radius:10px;font-weight:700}
+.btn-primary{background:var(--accent);color:#ffffff;padding:.7rem 1rem;border-radius:10px;font-weight:700}
 .btn-outline{border:1px solid rgba(133,226,217,.12);color:#cfebe6;padding:.55rem 0.9rem;border-radius:10px}
 
-.input-field{width:100%;padding:.65rem;border-radius:8px;background:#0b0b0b;border:1px solid rgba(255,255,255,.04);color:#ddd}
-.input-field:focus{outline:none;border-color:var(--accent);box-shadow:0 6px 18px rgba(133,226,217,.06)}
+/* neutral gray register button */
+.btn-gray{background:#2a2a2a;color:#ffffff;padding:.55rem 0.9rem;border-radius:10px;font-weight:600;border:1px solid rgba(255,255,255,0.04)}
+
+.input-field{width:100%;padding:.85rem 0.9rem;border-radius:10px;background:#111111;border:1px solid rgba(255,255,255,.04);color:#ffffff;backdrop-filter:blur(2px)}
+.input-field::placeholder{color:rgba(255,255,255,0.65)}
+.input-field:focus{outline:none;border-color:var(--accent);box-shadow:0 10px 40px rgba(133,226,217,.18), 0 0 32px rgba(133,226,217,.08)}
+
+/* better handling for browser autofill (keep dark background and readable text) */
+input.input-field:-webkit-autofill,
+textarea.input-field:-webkit-autofill,
+select.input-field:-webkit-autofill{
+  -webkit-box-shadow: 0 0 0 1000px #111111 inset !important;
+  box-shadow: 0 0 0 1000px #111111 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* make the form panel slightly darker and more solid to increase contrast */
+.neon-glow{background:#111111;border:1px solid rgba(133,226,217,0.26);box-shadow:0 8px 40px rgba(133,226,217,.12), 0 0 60px rgba(133,226,217,.08);backdrop-filter:blur(6px);position:relative}
+
+/* keep the neon as an outer glow/border only (no colored fill behind the panel) */
+.neon-glow::after{content:'';position:absolute;inset:-6px;border-radius:12px;pointer-events:none;box-shadow:0 0 40px rgba(133,226,217,.14);filter:blur(8px);opacity:.9;background:transparent;z-index:-1}
 
 /* neon and gamer style additions */
 body::before{
   content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 10% 10%, rgba(133,226,217,.04), transparent 8%), radial-gradient(ellipse at 90% 90%, rgba(133,226,217,.02), transparent 12%)}
 
-.neon-glow{position:relative}
-.neon-glow::after{content:'';position:absolute;inset:-2px;border-radius:8px;filter:blur(14px);opacity:.75;background:linear-gradient(90deg,var(--accent),#7ae3ff);z-index:-1}
+/* (neon-glow positioning and ::after handled above) */
 
 /* hover and focus animations */
 .btn-primary{transition:transform .18s ease, box-shadow .18s ease}
@@ -49,15 +67,15 @@ body::before{
 
 /* page background parallax layers */
 .page-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.page-bg .bg-layer{position:absolute;border-radius:18px;background:radial-gradient(circle at 30% 30%, rgba(133,226,217,.12), rgba(122,227,255,.06));box-shadow:0 40px 120px rgba(0,0,0,.6);transform:translate3d(0,0,0);transition:transform .12s linear}
+.page-bg .bg-layer{position:absolute;border-radius:18px;background:#111111;box-shadow:0 40px 120px rgba(0,0,0,.6);transform:translate3d(0,0,0);transition:transform .12s linear}
 
 @media (max-width:768px){
   .page-bg .bg-layer{display:none}
 }
 
 /* shape images inside bg layers */
-.page-bg .bg-layer{border-radius:8px;background:linear-gradient(135deg, rgba(133,226,217,.08), rgba(122,227,255,.04));border:1px solid rgba(133,226,217,.12);box-shadow:0 30px 90px rgba(16,20,24,.6)}
-.page-bg .bg-layer::before{content:'';position:absolute;inset:6px;border-radius:6px;background:linear-gradient(180deg, rgba(133,226,217,.02), transparent)}
+.page-bg .bg-layer{border-radius:8px;background:#111111;border:1px solid rgba(133,226,217,.18);box-shadow:0 30px 90px rgba(16,20,24,.6), 0 0 28px rgba(133,226,217,.06)}
+.page-bg .bg-layer::before{content:'';position:absolute;inset:6px;border-radius:6px;background:rgba(255,255,255,0.01)}
 .page-bg .bg-inner{position:absolute;inset:0;border-radius:6px;animation:slowfloat 8s ease-in-out infinite}
 @keyframes slowfloat{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-8px,0)}100%{transform:translate3d(0,0,0)}}
 .hero-layer[data-depth="0.18"]{right:2%;bottom:10%;width:22rem}
