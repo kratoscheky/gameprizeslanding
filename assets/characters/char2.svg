@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <rect width="100%" height="100%" fill="#071018" rx="24"/>
+  <circle cx="180" cy="120" r="50" fill="#7ae3ff" opacity=".12"/>
+  <text x="30" y="180" fill="#7ae3ff" font-family="Poppins, sans-serif" font-size="18">Character 2</text>
+</svg>
