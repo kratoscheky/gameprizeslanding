@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{--accent:#85e2d9}
+
+html,body{height:100%}
+
+/* small utility classes */
+.btn-primary{background:var(--accent);color:#0b0b0b;padding:.7rem 1rem;border-radius:10px;font-weight:700}
+.btn-outline{border:1px solid rgba(133,226,217,.12);color:#cfebe6;padding:.55rem 0.9rem;border-radius:10px}
+
+.input-field{width:100%;padding:.65rem;border-radius:8px;background:#0b0b0b;border:1px solid rgba(255,255,255,.04);color:#ddd}
+.input-field:focus{outline:none;border-color:var(--accent);box-shadow:0 6px 18px rgba(133,226,217,.06)}
+
+/* marquee logos */
+.logos-marquee{height:48px}
+.logos{animation:marq 18s linear infinite}
+@keyframes marq{0%{transform:translateX(0)}50%{transform:translateX(-30%)}100%{transform:translateX(0)}}
+
+/* typing-like reveal for the H1 end */
+.animate-typing{display:inline-block;transform-origin:left;animation:pop .9s both}
+@keyframes pop{0%{opacity:0;transform:translateY(6px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
+/* small responsive tweaks */
+@media (max-width:768px){
+  .logos{animation-duration:28s}
+}
