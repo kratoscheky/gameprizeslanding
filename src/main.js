@@ -144,3 +144,38 @@ if(hero){
     }
   }
 }
+
+// Parallax & reveal for reward sections
+const rewardSections = document.querySelectorAll('.reward-section');
+if(rewardSections.length){
+  const ioReward = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        const bgDiv = entry.target.querySelector('.reward-bg');
+        const src = entry.target.getAttribute('data-bg');
+        if(src && bgDiv && !bgDiv.dataset.loaded){
+          const img = new Image();
+          img.src = src;
+          img.onload = ()=>{
+            bgDiv.style.backgroundImage = `url('${src}')`;
+            bgDiv.dataset.loaded = '1';
+          };
+        }
+      }
+    })
+  },{threshold:0.25});
+  rewardSections.forEach(sec=>ioReward.observe(sec));
+
+  function onScroll(){
+    const wh = window.innerHeight;
+    rewardSections.forEach(sec=>{
+      const rect = sec.getBoundingClientRect();
+      const center = rect.top + rect.height/2 - wh/2; // distance from center viewport
+      const norm = Math.max(-1, Math.min(1, center / (wh*0.75)));
+      sec.style.setProperty('--parallax', norm.toString());
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+}
