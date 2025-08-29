@@ -55,16 +55,153 @@ function animateAmount(){
 setTimeout(animateAmount,600);
 setInterval(animateAmount,8000);
 
-// signup demo
+// signup -> POST to gameprizes.net/api/register
 const form = document.getElementById('signup');
-form.addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const fd = new FormData(form);
-  const email = fd.get('email');
-  // simple feedback
-  alert(`Thanks ${email}. Demo signup complete.`);
-  form.reset();
-});
+if (form) {
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const email = (fd.get('email') || '').toString();
+    const password = (fd.get('password') || '').toString();
+    const confirm = (fd.get('confirm') || '').toString();
+
+    // basic client-side checks
+    if (!email || !password || !confirm) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    if (password !== confirm) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    // derive a simple name if none provided
+    const name = (fd.get('name') || email.split('@')[0]).toString();
+
+    const payload = {
+      name,
+      email,
+      password,
+      password_confirmation: confirm
+    };
+
+    try {
+      if (submitBtn) {
+        submitBtn.setAttribute('disabled', 'true');
+        submitBtn.dataset.origText = submitBtn.textContent || '';
+        submitBtn.textContent = 'Signing up...';
+      }
+
+      const resp = await fetch('https://www.gameprizes.net/api/register', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const contentType = resp.headers.get('content-type') || '';
+
+      if (resp.ok) {
+        // If the API redirected to login, follow it in the browser
+        if (resp.redirected) {
+          window.location.href = resp.url;
+          return;
+        }
+
+        // If JSON returned with errors, show them
+        if (contentType.includes('application/json')) {
+          const data = await resp.json();
+          if (data.error || data.errors) {
+            const msg = data.error || (typeof data.errors === 'object' ? Object.values(data.errors).flat().join(' ') : JSON.stringify(data.errors));
+            alert(msg);
+            return;
+          }
+        }
+
+        // fallback: navigate to known login page
+        window.location.href = 'https://www.gameprizes.net/login';
+      } else {
+        // non-OK response
+        let msg = `Sign up failed (${resp.status})`;
+        if (contentType.includes('application/json')) {
+          try {
+            const data = await resp.json();
+            msg = data.error || data.message || JSON.stringify(data);
+          } catch (e) {}
+        }
+        alert(msg);
+      }
+    } catch (err) {
+      console.error('Signup error', err);
+      alert('Network error. Please try again.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.removeAttribute('disabled');
+        submitBtn.textContent = submitBtn.dataset.origText || 'Start Earning Prizes';
+        delete submitBtn.dataset.origText;
+      }
+    }
+  }
+
+  form.addEventListener('submit', handleSignup);
+}
+
+// Google Sign-up popup flow
+const googleBtn = document.getElementById('googleSignupBtn');
+if (googleBtn) {
+  googleBtn.addEventListener('click', (e)=>{
+    const clientId = googleBtn.dataset.clientId;
+    if(!clientId){
+      alert('Google client ID not configured. Set data-client-id on the button.');
+      return;
+    }
+
+    // build OAuth2 implicit flow URL (id_token via response_type=token id_token)
+    const redirectUri = window.location.origin + '/google_oauth_callback.html';
+    const scope = encodeURIComponent('openid email profile');
+    const nonce = Math.random().toString(36).slice(2);
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=id_token&scope=${scope}&prompt=select_account&nonce=${nonce}`;
+
+    const w = 600, h = 700;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top = window.screenY + (window.outerHeight - h) / 2;
+    const popup = window.open(url, 'gp_google_signin', `width=${w},height=${h},left=${left},top=${top}`);
+    if(!popup) { alert('Popup blocked. Please allow popups for this site.'); return; }
+
+    // listen for message from popup
+    function onMessage(ev){
+      if(!ev.data || ev.data.source !== 'gameprizes_google_oauth') return;
+      const id_token = ev.data.id_token;
+      if(id_token){
+        // send id_token to API endpoint (backend will verify and register)
+        fetch('https://www.gameprizes.net/api/register', {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_token })
+        }).then(async (resp)=>{
+          if(resp.ok){
+            if(resp.redirected) window.location.href = resp.url; else window.location.href = '/';
+            return;
+          }
+          let msg = `Sign up failed (${resp.status})`;
+          const ct = resp.headers.get('content-type') || '';
+          if(ct.includes('application/json')){
+            try{ const data = await resp.json(); msg = data.error || data.message || JSON.stringify(data); }catch(e){}
+          }
+          alert(msg);
+        }).catch(()=>alert('Network error during Google signup'));
+      }
+      window.removeEventListener('message', onMessage);
+      try{ popup.close(); }catch(e){}
+    }
+    window.addEventListener('message', onMessage);
+  });
+}
 
 // anchors smooth scroll
 document.querySelectorAll('a.anchor').forEach(a=>{
@@ -99,9 +236,9 @@ if(marquee){
 
 // swap some placeholders for public game art placeholders (demo)
 const placeholderImages = [
-  'https://i.imgur.com/8Km9tLL.jpg',
-  'https://i.imgur.com/5b3oQ6J.jpg',
-  'https://i.imgur.com/7bKQKk7.jpg'
+  '/src/assets/Quests/riseofkingdons.png',
+  '/src/assets/Quests/paramount.png',
+  '/src/assets/Quests/gameofthrones.png',
 ];
 document.querySelectorAll('.card').forEach((c,i)=>{
   const img = document.createElement('img');
@@ -145,6 +282,74 @@ if(hero){
   }
 }
 
+    // Typing rotator for hero subtitle
+    (function(){
+      const el = document.getElementById('typed');
+      if(!el) return;
+      const phrases = ['by playing games','by watching videos','by answer questions'];
+      let p = 0, ch = 0, typing = true;
+      const typeSpeed = 70, deleteSpeed = 40, pause = 1400;
+
+      function tick(){
+        const cur = phrases[p];
+        if(typing){
+          ch = Math.min(cur.length, ch + 1);
+          el.textContent = cur.slice(0, ch);
+          if(ch === cur.length){
+            typing = false;
+            setTimeout(tick, pause);
+          } else {
+            setTimeout(tick, typeSpeed + Math.random()*40);
+          }
+        } else {
+          ch = Math.max(0, ch - 1);
+          el.textContent = cur.slice(0, ch);
+          if(ch === 0){
+            typing = true;
+            p = (p + 1) % phrases.length;
+            setTimeout(tick, 220);
+          } else {
+            setTimeout(tick, deleteSpeed);
+          }
+        }
+      }
+
+      // small accessibility hint: ensure aria-live region is empty until we start
+      el.textContent = '';
+      setTimeout(tick, 700);
+    })();
+
+// Header anchor dropdown toggle
+const menuToggle = document.getElementById('menuToggle');
+const menuDropdown = document.getElementById('menuDropdown');
+if(menuToggle && menuDropdown){
+  function closeMenu(){
+    menuDropdown.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded','false');
+  }
+  function openMenu(){
+    menuDropdown.classList.add('open');
+    menuToggle.setAttribute('aria-expanded','true');
+  }
+  menuToggle.addEventListener('click',()=>{
+    const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+    expanded ? closeMenu() : openMenu();
+  });
+  // ensure lucide icons render for menu items when opened
+  function ensureIcons(){
+    try{ if(window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons(); }catch(e){}
+  }
+  const origOpen = openMenu; openMenu = function(){ origOpen(); ensureIcons(); };
+  document.addEventListener('click',(e)=>{
+    if(!menuDropdown.contains(e.target) && !menuToggle.contains(e.target)) closeMenu();
+  });
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape') closeMenu();
+  });
+  menuDropdown.querySelectorAll('a.anchor').forEach(a=>{
+    a.addEventListener('click',()=>closeMenu());
+  });
+}
 // Parallax & reveal for reward sections
 const rewardSections = document.querySelectorAll('.reward-section');
 if(rewardSections.length){
@@ -179,3 +384,48 @@ if(rewardSections.length){
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 }
+
+// Trustpilot client-side fallback: fetch from local proxy /api/trustpilot/reviews
+(function(){
+  const container = document.getElementById('trustpilot-widget');
+  if(!container) return;
+
+  // If Trustpilot widget loaded, it will replace inner content. Wait a moment then try fallback.
+  let tried = false;
+  function renderFallback(reviews){
+    if(!reviews || !reviews.length){
+      container.innerHTML = '<div class="text-sm text-gray-400">No reviews available. <a href="https://www.trustpilot.com/review/gameprizes.net" target="_blank" rel="noopener" class="underline text-[#85e2d9]">Read on Trustpilot</a></div>';
+      return;
+    }
+    const list = document.createElement('div');
+    list.className = 'space-y-4';
+    reviews.slice(0,3).forEach(r=>{
+      const el = document.createElement('blockquote');
+      el.className = 'p-4 bg-[#0b0b0b] rounded';
+      el.innerHTML = `<div class=\"flex items-center gap-3\"><strong class=\"text-white\">${escapeHtml(r.author || 'Anonymous')}</strong><span class=\"text-xs text-gray-400\">${escapeHtml(r.date || '')}</span></div><p class=\"mt-2 text-sm text-gray-300\">${escapeHtml(r.text || '')}</p><div class=\"mt-2 text-yellow-400\">${'★'.repeat(Math.max(0,Math.min(5,Math.round(r.rating||0))))}</div>`;
+      list.appendChild(el);
+    });
+    container.innerHTML = '';
+    container.appendChild(list);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]; });
+  }
+
+  setTimeout(async ()=>{
+    // If the Trustpilot widget script already injected content, skip fallback
+    if(container.querySelector('.trustpilot-widget') || container.querySelector('iframe')) return;
+    if(tried) return; tried = true;
+    try{
+      const resp = await fetch('/api/trustpilot/reviews');
+      if(!resp.ok) throw new Error('no');
+      const data = await resp.json();
+      renderFallback(data.reviews || data);
+    }catch(e){
+      // keep the small link to Trustpilot
+      container.innerHTML = '<div class="text-sm text-gray-400">Reviews unavailable. <a href="https://www.trustpilot.com/review/gameprizes.net" target="_blank" rel="noopener" class="underline text-[#85e2d9]">Read on Trustpilot</a></div>';
+    }
+  }, 1200);
+})();
+

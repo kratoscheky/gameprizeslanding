@@ -6,6 +6,19 @@
 
 html,body{height:100%}
 
+/* Center-align page text content per client request.
+   Keep header/actions and small UI controls unaffected by using a scoped rule
+   that targets the main content area and prominent content containers. */
+main,
+main h1, main h2, main h3, main h4, main h5, main h6,
+main p, main li, main blockquote, main figcaption,
+.panel-neon, .panel-neon *,
+.reward-section .panel-neon, .reward-section .panel-neon *,
+.hero .space-y-6 {
+  text-align: center;
+}
+
+
 /* small utility classes */
 .btn-primary{background:var(--accent);color:#ffffff;padding:.7rem 1rem;border-radius:10px;font-weight:700}
 .btn-outline{border:1px solid rgba(133,226,217,.12);color:#cfebe6;padding:.55rem 0.9rem;border-radius:10px}
@@ -46,12 +59,39 @@ body::before{
 .card{transition:transform .25s cubic-bezier(.2,.9,.3,1), box-shadow .25s}
 .card:hover{transform:translateY(-8px) scale(1.01);box-shadow:0 18px 40px rgba(0,0,0,.6)}
 
+/* Cards should not inherit the broad "main h*" centering. Keep their
+   headings and paragraphs left-aligned for predictable card layout. */
+.card h4, .card p, .card .font-semibold{ text-align: left; }
+
+/* Title + meta row inside a card: keep title left and allow the meta to sit to the right. */
+.card > .flex.items-center.justify-between{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.card > .flex.items-center.justify-between > h4{
+  flex: 1 1 auto;
+  text-align: left;
+  display:flex; /* keep icon + text alignment */
+  align-items:center;
+  justify-content:flex-start;
+}
+.card > .flex.items-center.justify-between > .text-sm{
+  flex: 0 0 auto;
+}
+
+/* FAQ and similar info blocks: center their headings and descriptive text,
+   but avoid forcing center on `.p-4` that are also `.card`. */
+.p-4:not(.card) h4,
+.p-4:not(.card) .font-semibold{justify-content:center; text-align:center; width:100%}
+.p-4:not(.card) p{ text-align:center }
+
 /* reveal animations */
 .reveal{opacity:0;transform:translateY(18px) scale(.995);transition:opacity .6s ease, transform .6s ease}
 .reveal.visible{opacity:1;transform:translateY(0) scale(1)}
 
 /* hero accent text with neon stroke */
 .animate-typing{display:inline-block;transform-origin:left;animation:pop .9s both;color:var(--accent);text-shadow:0 0 8px rgba(133,226,217,.18),0 0 20px rgba(133,226,217,.06)}
+
+/* typing cursor for rotator */
+.typing-cursor{display:inline-block;width:10px;height:1.1em;margin-left:6px;background:var(--accent);border-radius:2px;vertical-align:middle;opacity:1;animation:blink 1s steps(2,end) infinite}
+@keyframes blink{50%{opacity:0}} 
 
 /* background grid subtle */
 .bg-grid{background-image:radial-gradient(rgba(255,255,255,.02) 1px, transparent 1px);background-size:40px 40px}
@@ -61,7 +101,7 @@ body::before{
 
 /* hero layers and particles */
 .hero{min-height:72vh}
-.hero .hero-bg{mix-blend-mode:screen;background-image:url('/assets/bg.png');background-size:cover;background-position:center center}
+.hero .hero-bg{mix-blend-mode:screen;background-image:url('./assets/bg.png');background-size:cover;background-position:center center}
 .hero .hero-bg img{display:none}
 .hero-layer{position:absolute;right:6%;bottom:8%;width:26rem;opacity:.95;transform:translate3d(0,0,0);transition:transform .25s ease}
 
@@ -104,6 +144,50 @@ body::before{
   .logos{animation-duration:28s}
 }
 
+/* ================= Header redesign ================= */
+.site-header{background:#0f1010d9;backdrop-filter:blur(14px);border-bottom:1px solid rgba(133,226,217,.15);box-shadow:0 4px 22px -6px rgba(0,0,0,.6);}
+.site-header .header-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;position:relative}
+/* ensure logo sits left and actions (menu + buttons) sit right */
+.site-header .header-inner .logo-wrap{grid-column:1;justify-self:start}
+.site-header .header-inner .actions{grid-column:3;justify-self:end}
+.menu-center{position:relative}
+.menu-anchor-btn{font-size:.85rem;letter-spacing:.06em;font-weight:700;color:#85e2d9;background:#101414;border:1px solid rgba(133,226,217,.4);padding:.55rem .9rem;border-radius:10px;box-shadow:0 0 0 1px rgba(133,226,217,.25),0 4px 18px -4px rgba(133,226,217,.4);transition:background .25s, box-shadow .25s;display:inline-flex;align-items:center}
+.menu-anchor-btn:hover{background:#142020;box-shadow:0 0 0 1px rgba(133,226,217,.4),0 6px 26px -4px rgba(133,226,217,.55)}
+.menu-dropdown{position:absolute;right:0;top:calc(100% + 6px);transform-origin:top right;transform:translateY(0) scale(.98);background:#0f1313;border:1px solid rgba(133,226,217,.35);padding:.6rem .8rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.4rem;width:min(640px,88vw);max-width:420px;opacity:0;pointer-events:none;border-radius:14px;box-shadow:0 18px 60px -18px rgba(0,0,0,.75),0 0 0 1px rgba(133,226,217,.18);transition:opacity .18s, transform .18s}
+.menu-dropdown a{font-size:.9rem;text-transform:none;letter-spacing:.02em;padding:.5rem .6rem;border:1px solid rgba(133,226,217,.12);border-radius:8px;background:linear-gradient(140deg,#141818,#0d1010);color:#dff7f4;display:flex;align-items:center;justify-content:flex-start;gap:.6rem;position:relative;overflow:hidden}
+.menu-dropdown a i{flex:0 0 auto}
+.menu-dropdown a span{display:inline-block}
+.menu-dropdown a::before{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 50% 10%,rgba(133,226,217,.45),transparent 70%);transition:opacity .4s}
+.menu-dropdown a:hover{border-color:rgba(133,226,217,.5);color:#ffffff}
+.menu-dropdown a:hover::before{opacity:.85}
+.menu-dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+
+.btn-login,.btn-register{font-size:.8rem;font-weight:600;letter-spacing:.06em;padding:.55rem 1.1rem;border-radius:8px;transition:background .25s, box-shadow .25s, border-color .25s}
+.btn-login{background:transparent;border:1px solid rgba(133,226,217,.4);color:#85e2d9}
+.btn-login:hover{background:#142020}
+.btn-register{background:#85e2d9;color:#041212;border:1px solid #85e2d9;box-shadow:0 4px 22px -4px rgba(133,226,217,.6),0 0 0 1px #85e2d9}
+.btn-register:hover{filter:brightness(1.08);box-shadow:0 6px 28px -4px rgba(133,226,217,.75),0 0 0 1px #85e2d9}
+
+@media (max-width:860px){
+  .site-header .header-inner{grid-template-columns:1fr auto auto;gap:.75rem}
+  .menu-dropdown{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .menu-anchor-btn{padding:.55rem .9rem}
+  .btn-login,.btn-register{padding:.5rem .8rem}
+}
+
+@media (max-width:640px){
+  /* On small screens the dropdown should be full-width and not constrained by the small parent */
+  .menu-right{position:static}
+  .menu-dropdown{position:fixed;left:12px;right:12px;top:56px;transform:none;grid-template-columns:1fr;padding:.6rem;border-radius:10px;width:auto;max-width:none;z-index:9999;max-height:calc(100vh - 80px);overflow:auto}
+  .menu-dropdown a{padding:.6rem .9rem}
+  .menu-anchor-btn{padding:.45rem .65rem}
+}
+
+/* Override primary button inside signup panel to follow new brand style */
+#signup .btn-primary{background:#85e2d9;color:#041212;font-weight:600;border:1px solid #85e2d9;box-shadow:0 4px 22px -4px rgba(133,226,217,.55),0 0 0 1px #85e2d9;transition:filter .25s, box-shadow .25s, transform .25s}
+#signup .btn-primary:hover{filter:brightness(1.08);box-shadow:0 6px 30px -6px rgba(133,226,217,.7),0 0 0 1px #85e2d9;transform:translateY(-2px)}
+#signup .btn-primary:active{transform:translateY(0);box-shadow:0 3px 14px -2px rgba(133,226,217,.55),0 0 0 1px #85e2d9}
+
 /* ================= Reward fullscreen sections ================= */
 .reward-section{position:relative;min-height:100vh;display:block;overflow:hidden;isolation:isolate}
 .reward-section .reward-bg{position:absolute;inset:0;background:#101010 center/cover no-repeat;filter:brightness(.45) saturate(1.1);opacity:.9;transition:transform .8s ease, filter 1.2s ease}
@@ -112,7 +196,7 @@ body::before{
 .reward-section .inner{position:relative;z-index:2}
 .panel-neon{background:rgba(20,20,20,.75);backdrop-filter:blur(10px);border:1px solid rgba(133,226,217,.28);padding:2.2rem 2rem;border-radius:18px;box-shadow:0 8px 40px -8px rgba(133,226,217,.18),0 0 0 1px rgba(133,226,217,.15),0 0 60px -10px rgba(133,226,217,.22);position:relative;overflow:hidden}
 .panel-neon::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;background:linear-gradient(110deg,rgba(133,226,217,.9),rgba(133,226,217,.05) 38%,rgba(133,226,217,.4) 70%,rgba(133,226,217,.15));-webkit-mask:
-linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:rotateBorder 8s linear infinite}
+linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:rotateBorder 8s linear infinite}
 @keyframes rotateBorder{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
 .section-title{font-size:clamp(1.8rem,4.2vw,3rem);font-weight:800;line-height:1.05;text-shadow:0 0 12px rgba(133,226,217,.25),0 4px 18px rgba(0,0,0,.9)}
 .section-text{color:#d1d5db;font-size:clamp(.95rem,1.4vw,1.05rem);max-width:56ch;line-height:1.55}
@@ -146,3 +230,34 @@ linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-com
   .section-title{font-size:clamp(1.8rem,6vw,2.4rem)}
   .feature-badges li{font-size:.6rem}
 }
+
+/* Footer: center content on small screens */
+@media (max-width:768px){
+  footer .max-w-6xl{display:block}
+  footer .max-w-6xl > *{text-align:center;margin-left:0;margin-right:0}
+  footer .max-w-6xl .flex{justify-content:center}
+  footer .max-w-6xl ul{margin-left:0;display:inline-block}
+  /* center the footer logo image on small screens */
+  footer .max-w-6xl > div:first-child img{display:block;margin-left:auto;margin-right:auto}
+}
+
+/* Stronger, scoped center alignment for reward panels so titles and badges are centered
+   even when the section layout uses flex (e.g. justify-end) */
+.reward-section .panel-neon{
+  text-align: center;
+}
+.reward-section .panel-neon .section-title,
+.reward-section .panel-neon .section-text{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.reward-section .panel-neon .feature-badges{
+  justify-content: center;
+}
+
+/* footer social icons */
+.social-icon{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#131616;border:1px solid rgba(133,226,217,.25);color:#cfeee8;box-shadow:0 0 0 1px rgba(133,226,217,.12),0 4px 16px -4px rgba(0,0,0,.6);transition:background .3s, color .3s, box-shadow .3s, transform .3s}
+.social-icon:hover{background:#162222;color:#ffffff;border-color:rgba(133,226,217,.55);box-shadow:0 0 0 1px rgba(133,226,217,.4),0 6px 26px -6px rgba(133,226,217,.65);transform:translateY(-3px)}
+.social-icon:active{transform:translateY(0);box-shadow:0 0 0 1px rgba(133,226,217,.4),0 3px 14px -4px rgba(133,226,217,.55)}
+.social-icon .iconify{width:22px;height:22px;display:block}

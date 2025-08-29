@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Google OAuth Callback</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+  </head>
+  <body>
+    <script>
+      // Extract id_token from URL fragment and postMessage to opener
+      (function(){
+        try{
+          const hash = window.location.hash.substring(1);
+          const params = new URLSearchParams(hash);
+          const id_token = params.get('id_token');
+          if(window.opener && id_token){
+            window.opener.postMessage({ source: 'gameprizes_google_oauth', id_token: id_token }, window.location.origin);
+            document.body.innerText = 'Sign-in successful. You can close this window.';
+          } else {
+            document.body.innerText = 'No id_token received.';
+          }
+        }catch(e){
+          document.body.innerText = 'OAuth callback error.';
+        }
+        // close after a short delay
+        setTimeout(()=>{ try{ window.close(); }catch(e){} }, 1200);
+      })();
+    </script>
+  </body>
+</html>
